@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Data Pact</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lora:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #111008;
+    --paper: #f7f3ea;
+    --deep: #1c1810;
+    --red: #9b2a1a;
+    --gold: #a07830;
+    --muted: #7a7060;
+    --line: rgba(17,16,8,0.12);
+  }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Lora', Georgia, serif;
+    min-height: 100vh;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 99;
+  }
+
+  .lang-bar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--ink);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0 40px;
+    height: 44px;
+    gap: 12px;
+  }
+
+  .lang-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: rgba(247,243,234,0.4);
+  }
+
+  .lang-switch {
+    display: flex;
+    border: 1px solid rgba(247,243,234,0.2);
+  }
+
+  .lang-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    padding: 6px 16px;
+    cursor: pointer;
+    border: none;
+    border-right: 1px solid rgba(247,243,234,0.2);
+    background: transparent;
+    color: rgba(247,243,234,0.45);
+    transition: all 0.2s;
+  }
+
+  .lang-btn:last-child { border-right: none; }
+  .lang-btn.active { background: var(--red); color: white; }
+  .lang-btn:hover:not(.active) { color: rgba(247,243,234,0.8); }
+
+  .ru { display: none; }
+  .en { display: block; }
+  body.lang-ru .ru { display: block; }
+  body.lang-ru .en { display: none; }
+
+  .page {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 80px 40px 120px;
+  }
+
+  .header {
+    margin-bottom: 72px;
+    animation: rise 1s ease both;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(42px, 9vw, 76px);
+    font-weight: 700;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    color: var(--deep);
+    margin-bottom: 8px;
+  }
+
+  .title-sub {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(20px, 4vw, 32px);
+    font-weight: 400;
+    font-style: italic;
+    color: var(--red);
+    margin-bottom: 32px;
+  }
+
+  .header-rule {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, var(--ink), transparent);
+    margin-top: 32px;
+  }
+
+  .section {
+    margin-bottom: 64px;
+    animation: rise 0.8s ease both;
+  }
+
+  .section:nth-child(2) { animation-delay: 0.1s; }
+  .section:nth-child(3) { animation-delay: 0.2s; }
+  .section:nth-child(4) { animation-delay: 0.3s; }
+  .section:nth-child(5) { animation-delay: 0.4s; }
+  .section:nth-child(6) { animation-delay: 0.5s; }
+  .section:nth-child(7) { animation-delay: 0.6s; }
+
+  .section-mark {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .opening {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(24px, 4.5vw, 36px);
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--deep);
+    margin-bottom: 32px;
+  }
+
+  .opening em { font-style: italic; color: var(--red); }
+
+  p {
+    font-size: clamp(16px, 2.2vw, 18px);
+    font-weight: 400;
+    line-height: 1.85;
+    color: #2e2a20;
+    margin-bottom: 20px;
+  }
+
+  p:last-child { margin-bottom: 0; }
+
+  .pull {
+    margin: 48px 0;
+    padding: 32px 40px;
+    border-left: 3px solid var(--red);
+    background: rgba(155,42,26,0.03);
+  }
+
+  .pull p {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(19px, 3.2vw, 24px);
+    font-style: italic;
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--deep);
+    margin: 0;
+  }
+
+  .principle {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .principle:first-of-type { border-top: 1px solid var(--line); }
+
+  .principle-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(17px, 2.5vw, 20px);
+    font-weight: 700;
+    color: var(--deep);
+    margin-bottom: 10px;
+  }
+
+  .principle p {
+    font-size: clamp(15px, 2vw, 17px);
+    line-height: 1.75;
+    margin: 0;
+    color: #3a3628;
+  }
+
+  .divider {
+    width: 48px;
+    height: 2px;
+    background: var(--gold);
+    margin: 48px 0;
+  }
+
+  .cta {
+    margin-top: 80px;
+    text-align: center;
+  }
+
+  .cta-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 5.5vw, 48px);
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.2;
+    color: var(--deep);
+    margin-bottom: 32px;
+  }
+
+  .cta-title span { color: var(--red); display: block; }
+
+  .cta p {
+    max-width: 480px;
+    margin: 0 auto 20px;
+    text-align: center;
+  }
+
+  .signature {
+    margin-top: 80px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+
+  .sig-name {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 4.5vw, 40px);
+    font-style: italic;
+    font-weight: 400;
+    color: var(--deep);
+    line-height: 1;
+  }
+
+  .sig-detail {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    line-height: 2.4;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .contacts {
+    margin-top: 56px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+  }
+
+  .contacts-mark {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .contacts-row {
+    display: flex;
+    gap: 56px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .contact-item {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .contact-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .contact-link {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: clamp(16px, 2.2vw, 18px);
+    color: var(--deep);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .contact-link:hover { color: var(--red); }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 560px) {
+    .lang-bar { padding: 0 20px; }
+    .page { padding: 48px 24px 80px; }
+    .pull { padding: 24px 20px; }
+    .signature { flex-direction: column; align-items: flex-start; }
+    .sig-detail { text-align: left; }
+    .contacts-row { gap: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="lang-bar">
+  <span class="lang-label">ЯЗЫК / LANGUAGE</span>
+  <div class="lang-switch">
+    <button class="lang-btn" onclick="setLang('ru', this)">RU</button>
+    <button class="lang-btn active" onclick="setLang('en', this)">EN</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <header class="header">
+    <div class="eyebrow ru">Манифест · 2026</div>
+    <div class="eyebrow en">Manifesto · 2026</div>
+    <div class="title">World Data Pact</div>
+    <div class="title-sub ru">Пакт о доверии к реальности</div>
+    <div class="title-sub en">A Pact on Trust in Reality</div>
+    <div class="header-rule"></div>
+  </header>
+
+  <div class="section">
+    <p class="opening ru">Человечество впервые в истории производит<br>больше информации, чем способно осмыслить.<br>И впервые не знает, <em>чему из неё верить.</em></p>
+    <p class="opening en">For the first time in history, humanity produces<br>more information than it can comprehend.<br>And for the first time does not know <em>what to believe.</em></p>
+
+    <p class="ru">Это не технологическая проблема. Это цивилизационный кризис. Когда основание — общее понимание реальности — начинает разрушаться, всё построенное на нём рушится вместе с ним: решения, институты, доверие между людьми.</p>
+    <p class="en">This is not a technological problem. It is a civilizational crisis. When the foundation — our shared understanding of reality — begins to crumble, everything built upon it crumbles with it: decisions, institutions, trust between people.</p>
+
+    <p class="ru">Мы стоим у этой черты.</p>
+    <p class="en">We stand at that threshold.</p>
+  </div>
+
+  <div class="pull">
+    <p class="ru">Ложь всегда существовала. Но никогда прежде она не стоила ничего — и никогда правда не стоила так дорого.</p>
+    <p class="en">Lies have always existed. But never before did they cost nothing — and never before did truth cost so much.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-mark ru">Откуда мы знаем выход</div>
+    <div class="section-mark en">We have been here before</div>
+
+    <p class="opening ru" style="font-size: clamp(20px, 3.5vw, 28px);">Мы уже решали эту задачу. В меньшем масштабе — но решали.</p>
+    <p class="opening en" style="font-size: clamp(20px, 3.5vw, 28px);">We have solved this problem before. At a smaller scale — but we solved it.</p>
+
+    <p class="ru">Когда данные внутри организаций стали ненадёжными — запутанными, противоречивыми, бесхозными — появилась дисциплина управления данными. Возникло понятие происхождения: каждый факт несёт историю своего появления. Возникло понятие качества: точность, полнота, актуальность стали измеримы. Возникло понятие ответственности: каждая область данных получила хранителя.</p>
+    <p class="en">When data inside organizations became unreliable — tangled, contradictory, ownerless — the discipline of data governance emerged. The concept of provenance arose: every fact carries the history of its origin. The concept of quality arose: accuracy, completeness, timeliness became measurable. The concept of accountability arose: every data domain received a steward.</p>
+
+    <p class="ru">Это сработало внутри компаний. Теперь тот же кризис пришёл на уровень мира.</p>
+    <p class="en">It worked inside companies. Now the same crisis has arrived at the level of the world.</p>
+
+    <div class="divider"></div>
+
+    <p class="ru">World Data Pact — это попытка принести ту же дисциплину туда, где информация формирует реальность для миллиардов людей.</p>
+    <p class="en">World Data Pact is an attempt to bring that same discipline to where information shapes reality for billions of people.</p>
+  </div>
+
+  <div class="section">
+    <div class="section-mark ru">Принципы</div>
+    <div class="section-mark en">Principles</div>
+
+    <div class="principle">
+      <div class="principle-title ru">Происхождение важнее утверждения</div>
+      <div class="principle-title en">Provenance over assertion</div>
+      <p class="ru">Любое знание имеет источник. Любой источник имеет историю. Когда эта история скрыта — перед нами не информация, а манипуляция. Прозрачность происхождения есть первое условие доверия.</p>
+      <p class="en">All knowledge has a source. Every source has a history. When that history is hidden, what we have is not information — it is manipulation. Transparency of origin is the first condition of trust.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-title ru">Качество измеримо</div>
+      <div class="principle-title en">Quality is measurable</div>
+      <p class="ru">Точность, полнота, актуальность, внутренняя непротиворечивость — не абстрактные добродетели. Это измеримые характеристики. То, что нельзя измерить, нельзя улучшить. Мир нуждается в метриках истины — не в её арбитрах.</p>
+      <p class="en">Accuracy, completeness, timeliness, consistency — these are not abstract virtues. They are measurable properties. What cannot be measured cannot be improved. The world needs metrics of truth — not arbiters of it.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-title ru">Ответственность создаёт доверие</div>
+      <div class="principle-title en">Accountability creates trust</div>
+      <p class="ru">У каждой области знания должен быть хранитель — тот, кто отвечает за качество, а не за содержание. Наука, право, медицина, журналистика — все эти домены уже имеют институты. Им нужны не полномочия, а измеримые обязательства.</p>
+      <p class="en">Every domain of knowledge needs a steward — one who is accountable for quality, not for content. Science, law, medicine, journalism — these domains already have institutions. What they need is not more authority, but measurable commitments.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-title ru">Доверие зарабатывается — не присваивается</div>
+      <div class="principle-title en">Trust is earned — not declared</div>
+      <p class="ru">Ни один институт, ни одна платформа, ни одно государство не заслуживает доверия по умолчанию. Доверие — это история поступков: скорость признания ошибок, прозрачность методов, устойчивость под давлением. Это репутация, построенная временем, а не декретом.</p>
+      <p class="en">No institution, no platform, no government deserves trust by default. Trust is a track record: speed of acknowledging errors, transparency of methods, integrity under pressure. It is reputation built over time — not conferred by decree.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-title ru">Управление — не цензура</div>
+      <div class="principle-title en">Governance is not censorship</div>
+      <p class="ru">Пакт не решает, что является правдой. Он делает видимым — кто говорит, на каком основании, с какой историей достоверности. Разница принципиальна: не замолчать ложь, но поднять её цену. Не подавить голоса, но обнажить их происхождение.</p>
+      <p class="en">The Pact does not decide what is true. It makes visible — who is speaking, on what basis, with what history of reliability. The distinction is essential: not to silence lies, but to raise their cost. Not to suppress voices, but to expose their origin.</p>
+    </div>
+
+    <div class="principle">
+      <div class="principle-title ru">Стандарты принадлежат всем</div>
+      <div class="principle-title en">Standards belong to everyone</div>
+      <p class="ru">Правила доверия не могут принадлежать одной компании, одному правительству, одной культуре. Пакт — это добровольное соглашение цивилизации с собой. Он работает, потому что его принимают. Не потому что его навязывают.</p>
+      <p class="en">The rules of trust cannot belong to one company, one government, one culture. The Pact is civilization's voluntary agreement with itself. It works because it is adopted. Not because it is imposed.</p>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-mark ru">Почему сейчас</div>
+    <div class="section-mark en">Why now</div>
+
+    <p class="ru">Искусственный интеллект сделал производство контента бесконечным и бесплатным. Это необратимо. Мы не можем замедлить создание информации — мы можем только научиться понимать её природу.</p>
+    <p class="en">Artificial intelligence has made the production of content infinite and free. This is irreversible. We cannot slow the creation of information — we can only learn to understand its nature.</p>
+
+    <p class="ru">Каждое поколение выстраивало инфраструктуру для своих вызовов. Одни строили дороги. Другие — правовые системы. Третьи — интернет. Наш вызов — инфраструктура доверия к информации. И у нас есть для этого и знания, и инструменты.</p>
+    <p class="en">Every generation built the infrastructure its challenges demanded. Some built roads. Others built legal systems. Others built the internet. Our challenge is the infrastructure of trust in information. We have the knowledge and the tools.</p>
+
+    <p class="ru">Не хватает только решимости.</p>
+    <p class="en">All that is missing is the will.</p>
+  </div>
+
+  <div class="cta">
+    <div class="cta-title ru">
+      Общество заслуживает
+      <span>инфраструктуры доверия.</span>
+    </div>
+    <div class="cta-title en">
+      Society deserves
+      <span>an infrastructure of trust.</span>
+    </div>
+
+    <p class="ru">Не цензуры. Не регулирования сверху. Добровольного соглашения тех, кто создаёт, распространяет и формирует информацию — взять на себя измеримую ответственность перед теми, кто её получает.</p>
+    <p class="en">Not censorship. Not top-down regulation. A voluntary agreement among those who create, distribute, and shape information — to take on measurable accountability to those who receive it.</p>
+
+    <p class="ru">Data Contracts принесли доверие в пайплайны.<br><strong>World Data Pact приносит доверие в мир.</strong></p>
+    <p class="en">Data Contracts brought trust to pipelines.<br><strong>World Data Pact brings trust to the world.</strong></p>
+  </div>
+
+  <div class="signature">
+    <div class="sig-name">World Data Pact</div>
+    <div class="sig-detail ru">
+      ОСНОВАН В 2026<br>
+      ОТКРЫТЫЙ СТАНДАРТ
+    </div>
+    <div class="sig-detail en">
+      FOUNDED IN 2026<br>
+      OPEN STANDARD
+    </div>
+  </div>
+
+  <div class="contacts">
+    <div class="contacts-mark ru">Контакты</div>
+    <div class="contacts-mark en">Contact</div>
+    <div class="contacts-row">
+      <div class="contact-item">
+        <span class="contact-label">LinkedIn</span>
+        <a class="contact-link" href="https://www.linkedin.com/in/sergey-petrichenko/" target="_blank">Sergey Petrichenko</a>
+      </div>
+      <div class="contact-item">
+        <span class="contact-label ru">Почта</span>
+        <span class="contact-label en">Email</span>
+        <a class="contact-link" href="mailto:sv.petrich@gmail.com">sv.petrich@gmail.com</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function setLang(lang, btn) {
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.body.className = lang === 'ru' ? 'lang-ru' : '';
+    document.documentElement.lang = lang;
+  }
+</script>
+</body>
+</html>
